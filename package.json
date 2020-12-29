@@ -1,0 +1,17 @@
+{
+  "name": "karma-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "azure-storage": "^2.10.3",
+    "dotenv": "^8.2.0",
+    "lodash": "^4.17.20",
+    "slackbots": "^1.2.0"
+  }
+}
