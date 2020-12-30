@@ -1,13 +1,14 @@
 const azure = require('azure-storage');
-
 class AzureTableRepository {
+   
 
     constructor(clientApp) {
         this.tableService = azure.createTableService();
         this.clientApp = clientApp;
+    
+        this.tableName = "karma";
 
-
-        this.tableService.createTableIfNotExists("karma", (error,result,response) =>{
+        this.tableService.createTableIfNotExists(this.tableName, (error,result,response) =>{
             if (error){
                 throw new Error("Failed to create table:" + response);
             }
@@ -17,31 +18,48 @@ class AzureTableRepository {
     }
 
 
-    getUserKarma = (email) => {
- 
+    getKarma = async (email) => {
+        return new Promise((resolve,reject) =>{
+            let promiseHandler = (err, result) => {
+                if (err) {
+                    if (err.statusCode === 404){
+                        resolve(null);
+                    }else{
+                        reject(err);
+                    }                    
+                } else {
+                    resolve({
+                        karma:result.karma._,
+                        email:result.RowKey._,
+                    });
+                }
+            };
+
+            this.tableService.retrieveEntity(this.tableName,email,this.clientApp,promiseHandler);
+
+        });
     }
 
-    addUserKarma = (email,points) =>{
-        
-            this.tableService.retrieveEntity('karma',email,this.clientApp, (error,existingKarma) =>{
+    setKarma = async (email,karma) =>{
+        return new Promise (async (resolve,reject) =>{
+            let promiseHandler = (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(true);
+                }
+            };
 
-                //todo need add check for error
+            let task = {
+                PartitionKey: email,
+                RowKey: this.clientApp,
+                karma,
+            };
 
-                let existingPoints = existingKarma != null ? existingKarma.points._ : 0;
-                let totalPoints = existingPoints + points;
-
-                let entityGen = azure.TableUtilities.entityGenerator;
-                let task = {
-                    PartitionKey: entityGen.String(email),
-                    RowKey: entityGen.String(this.clientApp),
-                    points: totalPoints,
-                };
-
-                this.tableService.insertOrReplaceEntity('karma',task,function(error,result){
-                });
-            })
-         
+            this.tableService.insertOrReplaceEntity('karma',task,promiseHandler);
+        });
     }
 }
+
 
 module.exports = AzureTableRepository;

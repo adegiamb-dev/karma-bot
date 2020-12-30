@@ -38,15 +38,21 @@ class KarmaResponse {
             let userId = getUserId(data[0]);
             let  points = data[1].trim();
 
-            this.bot.postMessage(message.channel,"Wow " + userId + "+=" + count(points,"+") + "-=" + count(points,"-"));
-
              let user = await this.bot.getUserById(userId);
 
              if (user !== null){
                 var pointsToAdd = count(points,'+') - count(points,'-');
 
-                this.repo.addUserKarma(user.profile.email,pointsToAdd)
+                let userKarma = await this.repo.getKarma(user.profile.email);
 
+                let existingKarma = userKarma != null ? userKarma.karma : 0;
+                let newKarma = existingKarma + pointsToAdd;
+
+                let karmaSet = await this.repo.setKarma(user.profile.email,newKarma);
+
+                if (karmaSet){
+                    this.bot.postMessage(message.channel,`<@${userId}> has ${newKarma}.`);
+                }
              }
         }
 
