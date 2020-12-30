@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "make-prettier": "npx prettier --write \"./**/*.js\""
   },
   "author": "",
   "license": "ISC",
@@ -13,5 +14,8 @@
     "dotenv": "^8.2.0",
     "lodash": "^4.17.20",
     "slackbots": "^1.2.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.2.1"
   }
 }

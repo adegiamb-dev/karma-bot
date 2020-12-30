@@ -1,49 +1,23 @@
-
 //https://github.com/slackapi/hubot-slack/issues/584#issuecomment-611808704
-const SlackBot = require('slackbots');
-const KarmaResponse = require('./responses/karma-response');
+
+const KarmaService = require('./services/karma-service');
 const AzureTableRepository = require('./repositories/azure-table-repository');
 
-const dotenv = require('dotenv')
+const SlackBot = require('./bots/slack-bot');
 
-dotenv.config()
+const dotenv = require('dotenv');
 
-const bot = new SlackBot({
-    token: `${process.env.BOT_TOKEN}`, 
-    name:'karmabot',
-})
+dotenv.config();
 
-const karmaResponse = new KarmaResponse(bot, new AzureTableRepository('slack'));
+const bot = new SlackBot({});
+bot.connect();
 
+const karmaService = new KarmaService(new AzureTableRepository('slack'), process.env.KARMA_DEFAULT_VALUE);
 
-bot.on('start', () => {
-    const params = {
-        icon_emoji: ':robot_face:'
-    }
-
-    bot.postMessageToChannel(
-        'building-bots',
-        'The ones you judge today, may be the judgments you endure tomorrow.',
-        params
-    );
+bot.on('addKarma', async (bot, data) => {
+  await karmaService.addKarma(bot, data);
 });
 
-
-
-bot.on('error',(err) =>{
-    console.error(err);
-})
-
-bot.on('message',(data)=>{
-
-    if (data.type === 'message'){
-        if (karmaResponse.canRespond(data)){
-            karmaResponse.respond(data);
-        }
-    }
-
-    if (data.type === 'message.im'){
-        console.log("direct message")
-    }
-    
+bot.on('onError', async (error) => {
+  console.error(error);
 });
