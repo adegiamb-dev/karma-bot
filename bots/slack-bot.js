@@ -15,7 +15,7 @@ class SlackBot extends EventEmitter {
     super(options);
     this.#token = process.env.SLACK_BOT_TOKEN;
     this.name = process.env.BOT_NAME;
-    this.#pointsRegex = /<@([\w]+> [\+|\-]+)/g;
+    this.#pointsRegex = /(<@[\w]+>) (\+{2,}|\-{2,})/g;
 
     console.assert(this.#token, 'token must be defined.');
     console.assert(this.name, 'the bot must have a name.');
@@ -70,7 +70,7 @@ class SlackBot extends EventEmitter {
           }
 
           let userId = getUserId(dataParts[0]);
-          let points = dataParts[1].trim();
+          let points = dataParts[1].trim().substring(1);  //remove on character to get the current value of karma to add.
 
           let user = await this.#bot.getUserById(userId);
 
@@ -78,7 +78,7 @@ class SlackBot extends EventEmitter {
             var model = {
               email: user.profile.email,
               userId: user.id,
-              karma: count(points, '+') - count(points, '-'),
+              karma: count(points, '+') - count(points, '-') ,
               requestData: data,
             };
 
