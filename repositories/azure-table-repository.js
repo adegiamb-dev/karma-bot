@@ -1,9 +1,7 @@
 const azure = require('azure-storage');
 class AzureTableRepository {
-  constructor(clientApp) {
+  constructor() {
     this.tableService = azure.createTableService();
-    this.clientApp = clientApp;
-
     this.tableName = 'karma';
 
     this.tableService.createTableIfNotExists(this.tableName, (error, result, response) => {
@@ -15,7 +13,7 @@ class AzureTableRepository {
     });
   }
 
-  getKarma = async (email) => {
+  getKarma = async (clientApp, email) => {
     return new Promise((resolve, reject) => {
       let promiseHandler = (err, result) => {
         if (err) {
@@ -32,11 +30,11 @@ class AzureTableRepository {
         }
       };
 
-      this.tableService.retrieveEntity(this.tableName, email, this.clientApp, promiseHandler);
+      this.tableService.retrieveEntity(this.tableName, email, clientApp, promiseHandler);
     });
   };
 
-  async setKarma(email, karma) {
+  async setKarma(clientApp, email, karma) {
     return new Promise(async (resolve, reject) => {
       let promiseHandler = (err, result) => {
         if (err) {
@@ -48,11 +46,11 @@ class AzureTableRepository {
 
       let task = {
         PartitionKey: email,
-        RowKey: this.clientApp,
+        RowKey: clientApp,
         karma,
       };
 
-      this.tableService.insertOrReplaceEntity('karma', task, promiseHandler);
+      this.tableService.insertOrReplaceEntity(this.tableName, task, promiseHandler);
     });
   }
 }
