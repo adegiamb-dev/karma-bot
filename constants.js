@@ -5,4 +5,13 @@ const KARMA_ADD_STATUS = Object.freeze({
   FAILURE_SELF_KARMA: 'failed-points-added-to-self',
   FAILURE: 'failed-to-add-points',
 });
-module.exports = { KARMA_ADD_STATUS };
+
+const KARMA_GET_STATUS = Object.freeze({
+  SUCCESSFUL: 'karma-retrieved',
+  USER_NOT_FOUND: 'user-name-found',
+});
+
+module.exports = {
+  KARMA_ADD_STATUS,
+  KARMA_GET_STATUS,
+};

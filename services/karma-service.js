@@ -1,4 +1,4 @@
-const { KARMA_ADD_STATUS } = require('../constants');
+const { KARMA_ADD_STATUS, KARMA_GET_STATUS } = require('../constants');
 
 class KarmaService {
   constructor(repository, defaultKarma, maxPointsPerRequest) {
@@ -43,6 +43,20 @@ class KarmaService {
     }
 
     bot.karmaAdded(model);
+  }
+
+  async getKarma(bot, model) {
+    let userKarma = await this.repo.getKarma(bot.clientApp, model.email);
+
+    if (userKarma !== null) {
+      model.karma = userKarma.karma;
+      model.karmaStatus = KARMA_GET_STATUS.SUCCESSFUL;
+    } else {
+      model.karma = 0;
+      model.karmaStatus = KARMA_GET_STATUS.USER_NOT_FOUND;
+    }
+
+    bot.displayKarma(model);
   }
 }
 

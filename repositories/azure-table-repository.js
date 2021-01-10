@@ -25,7 +25,7 @@ class AzureTableRepository {
         } else {
           resolve({
             karma: result.karma._,
-            email: result.RowKey._,
+            email: result.PartitionKey._,
           });
         }
       };
