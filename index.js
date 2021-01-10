@@ -7,6 +7,7 @@ const { KARMA_ADD_STATUS } = require('./constants');
 const SlackBot = require('./bots/slack-bot');
 
 const dotenv = require('dotenv');
+const { LinearRetryPolicyFilter } = require('azure-storage');
 
 dotenv.config();
 
@@ -18,6 +19,10 @@ try {
 
   bot.on('addKarma', async (bot, data) => {
     await karmaService.addKarma(bot, data);
+  });
+
+  bot.on('retrieveUserKarma', async (bot, data) => {
+    await karmaService.getKarma(bot, data);
   });
 
   bot.on('onError', async (error) => {

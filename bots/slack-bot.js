@@ -2,7 +2,7 @@
 const Bot = require('slackbots');
 const countBy = require('lodash/countBy');
 const EventEmitter = require('events').EventEmitter;
-const { KARMA_ADD_STATUS } = require('../constants');
+const { KARMA_ADD_STATUS, KARMA_GET_STATUS } = require('../constants');
 
 const getUserId = (input) => input.substring(2, input.indexOf('>'));
 const count = (str, ch) => countBy(str)[ch] || 0;
@@ -61,6 +61,19 @@ class SlackBot extends EventEmitter {
 
     return this.#bot.postMessage(model.requestData.channel, message);
   }
+  async displayKarma(model) {
+    let message = '';
+    switch (model.karmaStatus) {
+      case KARMA_GET_STATUS.SUCCESSFUL:
+        message = `<@${model.userId}> has ${model.karma} karma.`;
+        break;
+      default:
+        message = `<@${model.userId}> has 0 karma.  Let's help change that :).`;
+        break;
+    }
+
+    return this.#bot.postMessage(model.requestData.channel, message);
+  }
 
   #canRespond = (message) => {
     let matches = message.text.match(this.#pointsRegex);
@@ -79,6 +92,12 @@ class SlackBot extends EventEmitter {
 
   #onMessage = async (data) => {
     if (data.type === 'message') {
+      if (this.#isCommand(data.text)) {
+        this.#processCommand(data);
+
+        return;
+      }
+
       if (this.#canRespond(data)) {
         let matches = data.text.match(this.#pointsRegex);
 
@@ -112,6 +131,52 @@ class SlackBot extends EventEmitter {
         }
       }
     }
+  };
+
+  #isCommand = (text) => {
+    return text.startsWith(`<@${this.#bot.self.id}>`);
+  };
+
+  #processCommand = async (request) => {
+    var commandInput = request.text.replace(`<@${this.#bot.self.id}>`, '').trim();
+
+    var params = commandInput.split(' ');
+
+    if (params.length) {
+      var command = params[0];
+
+      switch (command.toLowerCase()) {
+        case 'karma':
+          this.#processGetKarma(params, request);
+          break;
+        case 'top':
+          console.log('get top');
+          break;
+        default:
+          console.log('bad command');
+          break;
+      }
+    }
+  };
+
+  #processGetKarma = async (params, request) => {
+    var userId = params.length == 1 ? request.user : this.#convertToId(params[1]);
+
+    let user = await this.#bot.getUserById(userId);
+
+    if (user === null) {
+      console.log('user not found.');
+    }
+
+    this.emit('retrieveUserKarma', this, {
+      userId,
+      email: user.profile.email,
+      requestData: request,
+    });
+  };
+
+  #convertToId = (input) => {
+    return input.substring(2, input.length - 1);
   };
 }
 
